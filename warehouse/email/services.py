@@ -32,10 +32,17 @@ def _format_sender(sitename, sender):
 
 
 class EmailMessage:
-    def __init__(self, subject: str, body_text: str, body_html: str | None = None):
+    def __init__(
+        self,
+        subject: str,
+        body_text: str,
+        body_html: str | None = None,
+        sender: str | None = None,
+    ):
         self.subject = subject
         self.body_text = body_text
         self.body_html = body_html
+        self.sender = sender
 
     @classmethod
     def from_template(cls, email_name, context, *, request):
@@ -76,7 +83,7 @@ class SMTPEmailSender:
                 body=message.body_text,
                 html=message.body_html,
                 recipients=[recipient],
-                sender=self.sender,
+                sender=message.sender,
             )
         )
 
@@ -110,7 +117,7 @@ class SESEmailSender:
     def send(self, recipient, message):
         raw = RawEmailMessage()
         raw["Subject"] = message.subject
-        raw["From"] = self._sender
+        raw["From"] = message.sender
         raw["To"] = recipient
 
         raw.set_content(message.body_text)
